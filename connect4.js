@@ -15,14 +15,14 @@
  *   board = array of rows, each row is array of cells  (board[y][x])
  */
 class Game {
-  // default values for height and width
+  // each game constructed with default values for height and width
+    // board created when a new Game is created, and new Game 
+    // created when "start" button is clicked
   constructor(height = 6, width = 7) {
-    // each game should be constructed w/ default 
-    // height/width if none passed in
-    // will also need to make the board and HTML board when new Game created
     this.height = height;
     this.width = width;
     this.makeBoard();
+    this.makeHtmlBoard();
   }
 
   makeBoard() {
@@ -92,6 +92,7 @@ class Game {
   /** endGame: announce game end */
   
   endGame(msg) {
+    // when game ends, remove click event so can't make anymore moves
     alert(msg);
   }
   
@@ -160,7 +161,11 @@ class Game {
     }
   }
 }
-new Game(6, 7);
+// only want to start/create new Game when "Start" button is clicked!
+let startGame = document.getElementById("start");
+startGame.addEventListener("click", function() {
+  new Game(6, 7);
+});
 
 // makeBoard();
 // makeHtmlBoard();
