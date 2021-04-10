@@ -18,11 +18,17 @@ class Game {
   // each game constructed with default values for height and width
     // board created when a new Game is created, and new Game 
     // created when "start" button is clicked
-  constructor(height = 6, width = 7) {
+
+  constructor(player1, player2, height = 6, width = 7) {
     this.height = height;
     this.width = width;
+    this.player1 = player1;
+    this.player2 = player2;
+    this.currPlayer = player1;
+    this.handleClick = this.handleClick.bind(this);
     this.makeBoard();
     this.makeHtmlBoard();
+    this.gameOver = false;
   }
 
   makeBoard() {
@@ -38,6 +44,7 @@ class Game {
   
   makeHtmlBoard() {
     const board = document.getElementById('board');
+    board.innerHTML = "";
   
     // make column tops (clickable area for adding a piece to that column)
     const top = document.createElement('tr');
@@ -82,7 +89,7 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement('div');
     piece.classList.add('piece');
-    piece.classList.add(`p${currPlayer}`);
+    piece.style.backgroundColor = this.currPlayer.color;
     piece.style.top = -50 * (y + 2);
   
     const spot = document.getElementById(`${y}-${x}`);
@@ -93,12 +100,18 @@ class Game {
   
   endGame(msg) {
     // when game ends, remove click event so can't make anymore moves
-    alert(msg);
+    setTimeout(function() {
+      alert(msg);
+    }, 300);
   }
   
   /** handleClick: handle click of column top to play piece */
   
   handleClick(evt) {
+    // check if a gameOver === true (player has won or there is a tie)
+    if (this.gameOver === true) {
+      return;
+    }
     // get x from ID of clicked cell
     const x = +evt.target.id;
   
@@ -109,43 +122,45 @@ class Game {
     }
   
     // place piece in board and add to HTML table
-    this.board[y][x] = currPlayer;
+    this.board[y][x] = this.currPlayer;
     this.placeInTable(y, x);
     
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${currPlayer} won!`);
+      this.gameOver = true;
+      return this.endGame(`${this.currPlayer.color} wins!`);
     }
     
     // check for tie
     if (this.board.every(row => row.every(cell => cell))) {
+      this.gameOver = true;
       return this.endGame('Tie!');
     }
       
     // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
+    this.currPlayer = this.currPlayer === this.player1 ? this.player2 : this.player1;
   }
   
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
   
   checkForWin() {
-    function _win(cells) {
-      // Check four cells to see if they're all color of current player
-      //  - cells: list of four (y, x) cells
-      //  - returns true if all are legal coordinates & all match currPlayer
-  
-      return cells.every(
+    // Check four cells to see if they're all color of current player
+    //  - cells: list of four (y, x) cells
+    //  - returns true if all are legal coordinates & all match currPlayer
+    
+    let _win = cells => 
+      cells.every(
         ([y, x]) =>
           y >= 0 &&
-          y < HEIGHT &&
+          y < this.height &&
           x >= 0 &&
-          x < WIDTH &&
+          x < this.width &&
           this.board[y][x] === this.currPlayer
       );
-    }
+    
   
-    for (let y = 0; y < HEIGHT; y++) {
-      for (let x = 0; x < WIDTH; x++) {
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
         // get "check list" of 4 cells (starting here) for each of the different
         // ways to win
         const horiz = [[y, x], [y, x + 1], [y, x + 2], [y, x + 3]];
@@ -161,10 +176,25 @@ class Game {
     }
   }
 }
+
+// create class Player
+  // constructor that takes color name (as string)
+  // and store on player instance
+class Player {
+  constructor(color) {
+    this.color = color;
+  }
+}
+
 // only want to start/create new Game when "Start" button is clicked!
 let startGame = document.getElementById("start");
 startGame.addEventListener("click", function() {
-  new Game(6, 7);
+  // create players when start button is clicked and colors given
+  let player1Color = document.getElementById("player1-color").value;
+  let player2Color = document.getElementById("player2-color").value;
+  let player1 = new Player(player1Color);
+  let player2 = new Player(player2Color);
+  new Game(player1, player2);
 });
 
 // makeBoard();
